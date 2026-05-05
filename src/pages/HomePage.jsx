@@ -1,8 +1,13 @@
+import Header from "../components/layouts/Header.jsx";
+
 const HomePage = () => {
   return (
-    <div>
-      <h1> AAAAAAAAAAAAAAAAAAAAA</h1>
-    </div>
+    <>
+      <Header/>
+      <div className="page-container">
+
+      </div>
+    </>
   )
 }
 export default HomePage;
