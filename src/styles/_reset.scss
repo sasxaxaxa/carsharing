@@ -38,7 +38,9 @@ svg * {
 }
 
 /* Links */
-
+a {
+  color: inherit;
+}
 a, a:link, a:visited  {
   text-decoration: none;
   outline: none;
