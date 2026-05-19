@@ -1,43 +1,15 @@
-import Header from "../components/layouts/Header.jsx";
-import CarCard from "../components/ui/CarCard.jsx";
+import Header from '../components/layouts/Header.jsx';
+import CarCardList from '../components/groups/CarCardList.jsx';
 
 const CatalogPage = () => {
   return (
     <>
-      <Header/>
+      <Header />
       <div className="page-container">
-        <div className="catalog">
-          <div className="catalog__list">
-            <ul>
-              <li>
-                <CarCard/>
-              </li>
-              <li>
-                <CarCard/>
-              </li>
-              <li>
-                <CarCard/>
-              </li>
-              <li>
-                <CarCard/>
-              </li>
-              <li>
-                <CarCard/>
-              </li>
-              <li>
-                <CarCard/>
-              </li>
-              <li>
-                <CarCard/>
-              </li>
-              <li>
-                <CarCard/>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <CarCardList />
       </div>
     </>
-  )
-}
+  );
+};
+
 export default CatalogPage;

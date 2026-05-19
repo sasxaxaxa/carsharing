@@ -38,7 +38,7 @@ const LoginPage = () => {
                   mode="transparent"
                   label="продолжить без регистрации"
                   location="login-banner"
-                  href="/home"
+                  href="/"
                 />
               </div>
             </div>

@@ -291,4 +291,66 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 3rem;
   }
+
+  &__status {
+    padding: 2rem 0;
+    text-align: center;
+
+    &--error button {
+      margin-left: 1rem;
+    }
+  }
+}
+
+.map {
+  &__container {
+    height: min(70vh, 640px);
+    width: 100%;
+    border-radius: 0.8rem;
+    overflow: hidden;
+  }
+
+  &__status {
+    margin-bottom: 1rem;
+
+    &--error {
+      color: #c0392b;
+    }
+  }
+
+  &__legend {
+    margin-top: 0.8rem;
+    opacity: 0.8;
+  }
+}
+
+.form__error {
+  color: #c0392b;
+  margin-bottom: 1rem;
+}
+
+.car-card__message {
+  margin-top: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.rentals {
+  padding: 2rem 0;
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  &__item {
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.8rem;
+  }
+
+  &__error {
+    color: #c0392b;
+  }
 }

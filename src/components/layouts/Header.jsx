@@ -27,7 +27,7 @@ const headerButtons = [
   },
   {
     mode: "transparent--border",
-    href: "/register",
+    href: "/login",
     label: "Войти",
     location: "header--login"
   },
