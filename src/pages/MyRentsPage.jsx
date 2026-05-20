@@ -4,6 +4,7 @@ import PageLayout from '../components/layouts/PageLayout.jsx';
 import RentalCard from '../components/rentals/RentalCard.jsx';
 import { getRentalHistory } from '../api/rentals.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { getRentalMetaMap } from '../utils/rentalMeta.js';
 
 const MyRentsPage = () => {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -18,7 +19,14 @@ const MyRentsPage = () => {
     setError('');
 
     return getRentalHistory()
-      .then(setRentals)
+      .then((data) => {
+        const metaMap = getRentalMetaMap();
+        const merged = (Array.isArray(data) ? data : []).map((rental) => {
+          const meta = metaMap[String(rental?.id)];
+          return meta ? { ...rental, __meta: meta } : rental;
+        });
+        setRentals(merged);
+      })
       .catch(() => setError('Не удалось загрузить историю аренд'))
       .finally(() => setLoading(false));
   }, [isAuthenticated]);

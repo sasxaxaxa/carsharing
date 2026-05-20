@@ -3,6 +3,12 @@ import CarCard from '../ui/CarCard.jsx';
 import { endRental } from '../../api/rentals.js';
 import { ApiError } from '../../api/http.js';
 import { getUserCoordinates } from '../../utils/geo.js';
+import { removeRentalMeta } from '../../utils/rentalMeta.js';
+import { BaseRental } from '../../patterns/decorator/BaseRental.js';
+import {
+  SERVICE_OPTIONS,
+  buildDecoratedRental,
+} from '../../patterns/decorator/RentalDecorators.js';
 
 const STATUS_LABELS = {
   active: 'Активна',
@@ -38,10 +44,31 @@ const RentalCard = ({ rental, onEnded }) => {
   const [endError, setEndError] = useState('');
   const [tick, setTick] = useState(0);
 
+  const meta = rental.__meta;
+
+  const servicesFromMeta = Array.isArray(meta?.services) ? meta.services : [];
+
   const pricePerMinute = useMemo(() => {
+    if (servicesFromMeta.length > 0) {
+      const base = new BaseRental({ pricePerMinute: car?.price_per_minute });
+      const decorated = buildDecoratedRental(base, servicesFromMeta);
+      return decorated.getPricePerMinute();
+    }
+
+    const fromMeta = parseFloat(meta?.price_per_minute);
+    if (!Number.isNaN(fromMeta) && fromMeta > 0) return fromMeta;
     if (!car?.price_per_minute) return 0;
     return parseFloat(car.price_per_minute);
-  }, [car]);
+  }, [car, meta, servicesFromMeta]);
+
+  const servicesLabel = useMemo(() => {
+    if (meta?.services_text) return meta.services_text;
+    if (servicesFromMeta.length === 0) return '';
+    const labels = servicesFromMeta
+      .map((key) => SERVICE_OPTIONS.find((s) => s.key === key)?.label || key)
+      .join(' + ');
+    return `Услуги: ${labels}`;
+  }, [meta, servicesFromMeta]);
 
   const estimatedMinutes = useMemo(() => {
     if (!isActiveRental(rental) || !rental.start_time) return 0;
@@ -71,6 +98,7 @@ const RentalCard = ({ rental, onEnded }) => {
         end_latitude: lat,
         end_longitude: lon,
       });
+      removeRentalMeta(rental.id);
       onEnded?.(result);
     } catch (err) {
       setEndError(err instanceof ApiError ? err.message : 'Не удалось завершить аренду');
@@ -99,6 +127,12 @@ const RentalCard = ({ rental, onEnded }) => {
         </h3>
 
         <dl className="rental-card__details">
+          {servicesLabel && (
+            <div className="rental-card__row">
+              <dt>Услуги</dt>
+              <dd>{servicesLabel}</dd>
+            </div>
+          )}
           <div className="rental-card__row">
             <dt>Начало</dt>
             <dd>{formatDateTime(rental.start_time)}</dd>
