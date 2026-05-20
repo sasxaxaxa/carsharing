@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/layouts/Header.jsx';
+import PageLayout from '../components/layouts/PageLayout.jsx';
+import RentalCard from '../components/rentals/RentalCard.jsx';
 import { getRentalHistory } from '../api/rentals.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -10,6 +11,18 @@ const MyRentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const loadHistory = useCallback(() => {
+    if (!isAuthenticated) return Promise.resolve();
+
+    setLoading(true);
+    setError('');
+
+    return getRentalHistory()
+      .then(setRentals)
+      .catch(() => setError('Не удалось загрузить историю аренд'))
+      .finally(() => setLoading(false));
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -18,53 +31,53 @@ const MyRentsPage = () => {
       return;
     }
 
-    getRentalHistory()
-      .then(setRentals)
-      .catch(() => setError('Не удалось загрузить историю аренд'))
-      .finally(() => setLoading(false));
-  }, [isAuthenticated, authLoading]);
+    loadHistory();
+  }, [authLoading, isAuthenticated, loadHistory]);
+
+  const handleRentalEnded = useCallback(
+    (result) => {
+      if (result?.message || result?.total_price != null) {
+        const lines = [result.message || 'Аренда завершена'];
+        if (result.duration_minutes != null) {
+          lines.push(`Длительность: ${result.duration_minutes} мин.`);
+        }
+        if (result.total_price != null) {
+          lines.push(
+            `Итого к оплате: ${Number(result.total_price).toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₽`,
+          );
+        }
+        window.alert(lines.join('\n'));
+      }
+      loadHistory();
+    },
+    [loadHistory],
+  );
 
   return (
-    <>
-      <Header />
-      <div className="page-container">
-        <section className="rentals">
-          <h1>Мои аренды</h1>
+    <PageLayout>
+      <section className="rentals">
+        <h1>Мои аренды</h1>
 
-          {!authLoading && !isAuthenticated && (
-            <p>
-              <Link to="/login">Войдите</Link>, чтобы увидеть историю аренд.
-            </p>
-          )}
+        {!authLoading && !isAuthenticated && (
+          <p>
+            <Link to="/login">Войдите</Link>, чтобы увидеть историю аренд.
+          </p>
+        )}
 
-          {loading && <p>Загрузка...</p>}
-          {error && <p className="rentals__error">{error}</p>}
+        {loading && <p>Загрузка...</p>}
+        {error && <p className="rentals__error">{error}</p>}
 
-          {!loading && isAuthenticated && !rentals.length && !error && (
-            <p>У вас пока нет аренд.</p>
-          )}
+        {!loading && isAuthenticated && !rentals.length && !error && (
+          <p>У вас пока нет аренд.</p>
+        )}
 
-          <ul className="rentals__list">
-            {rentals.map((rental) => {
-              const car = rental.car_details;
-              const title = car ? `${car.brand} ${car.model}` : `Авто #${rental.car}`;
-
-              return (
-                <li key={rental.id} className="rentals__item">
-                  <h3>{title}</h3>
-                  <p>Статус: {rental.status}</p>
-                  <p>Начало: {new Date(rental.start_time).toLocaleString('ru-RU')}</p>
-                  {rental.end_time && (
-                    <p>Окончание: {new Date(rental.end_time).toLocaleString('ru-RU')}</p>
-                  )}
-                  {rental.total_price && <p>Сумма: {rental.total_price} ₽</p>}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      </div>
-    </>
+        <ul className="rentals__list">
+          {rentals.map((rental) => (
+            <RentalCard key={rental.id} rental={rental} onEnded={handleRentalEnded} />
+          ))}
+        </ul>
+      </section>
+    </PageLayout>
   );
 };
 

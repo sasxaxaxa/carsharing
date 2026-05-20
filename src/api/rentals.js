@@ -1,25 +1,17 @@
-import { apiRequest } from './http.js';
+import { apiClient } from '../patterns/proxy/apiClient.js';
 
 export function startRental(payload) {
-  return apiRequest('/api/rentals/start', {
-    method: 'POST',
-    body: payload,
-    auth: true,
-  });
+  return apiClient.startRental(payload);
 }
 
 export function endRental(payload) {
-  return apiRequest('/api/rentals/end', {
-    method: 'POST',
-    body: payload,
-    auth: true,
-  });
+  return apiClient.endRental(payload);
 }
 
 export function getRentalHistory() {
-  return apiRequest('/api/rentals/history', { auth: true });
+  return apiClient.getRentalHistory();
 }
 
 export function getRentalDetail(rentalId) {
-  return apiRequest(`/api/rentals/${rentalId}`, { auth: true });
+  return apiClient.request(`/api/rentals/${rentalId}`, { auth: true });
 }

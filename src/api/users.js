@@ -1,19 +1,13 @@
-import { apiRequest } from './http.js';
+import { apiClient } from '../patterns/proxy/apiClient.js';
 
 export function registerUser(payload) {
-  return apiRequest('/api/users/register', {
-    method: 'POST',
-    body: payload,
-  });
+  return apiClient.register(payload);
 }
 
 export function loginUser(payload) {
-  return apiRequest('/api/users/login', {
-    method: 'POST',
-    body: payload,
-  });
+  return apiClient.login(payload);
 }
 
 export function getProfile() {
-  return apiRequest('/api/users/profile', { auth: true });
+  return apiClient.getProfile();
 }

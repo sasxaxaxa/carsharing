@@ -82,6 +82,22 @@
 .page-container {
   padding: 6.4rem;
 }
+
+/* Текст на страницах (не в карточке машины) */
+.page-content {
+  p,
+  li,
+  dt,
+  dd,
+  .map__legend,
+  .map__status,
+  .catalog__status,
+  .rentals__error,
+  a:not(.button):not(.header__logo) {
+    font-size: 1.6rem;
+    line-height: 150%;
+  }
+}
 .login {
   &__wrapper {
     display: grid;
@@ -283,6 +299,22 @@
     padding: 1rem 1.8rem;
     border-radius: 0.4rem;
   }
+
+  &__image {
+    width: 100%;
+    height: 16rem;
+    object-fit: cover;
+    border-radius: 0.8rem;
+    background: var(--secondary-100);
+  }
+
+  &__price--solo {
+    margin-top: 0.4rem;
+  }
+
+  &--map {
+    box-shadow: 0 1.6rem 4.8rem rgba(26, 32, 44, 0.2);
+  }
 }
 
 .catalog {
@@ -304,10 +336,48 @@
 
 .map {
   &__container {
+    position: relative;
     height: min(70vh, 640px);
     width: 100%;
     border-radius: 0.8rem;
     overflow: hidden;
+  }
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    border: none;
+    background: rgba(26, 32, 44, 0.35);
+    cursor: pointer;
+  }
+
+  &__overlay {
+    position: absolute;
+    z-index: 11;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(34rem, calc(100% - 3.2rem));
+    max-height: calc(100% - 3.2rem);
+    overflow-y: auto;
+  }
+
+  &__overlay-close {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    z-index: 12;
+    width: 3.2rem;
+    height: 3.2rem;
+    border: none;
+    border-radius: 50%;
+    background: var(--primary-0);
+    color: var(--secondary-500);
+    font-size: 2.4rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.15);
   }
 
   &__status {
@@ -337,20 +407,346 @@
 .rentals {
   padding: 2rem 0;
 
+  h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--secondary-500);
+    margin-bottom: 2.4rem;
+  }
+
   &__list {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2.4rem;
     margin-top: 2rem;
-  }
-
-  &__item {
-    padding: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 0.8rem;
+    list-style: none;
+    padding: 0;
   }
 
   &__error {
     color: #c0392b;
   }
+}
+
+.rental-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3.2rem;
+  align-items: start;
+  padding: 2.4rem;
+  background: var(--primary-0);
+  border: 1px solid var(--secondary-100);
+  border-radius: 1.6rem;
+  list-style: none;
+
+  &__car .car-card {
+    margin: 0;
+  }
+
+  &__placeholder {
+    width: 30.4rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--secondary-100);
+    border-radius: 1rem;
+    color: var(--secondary-400);
+    font-size: 1.6rem;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    padding-top: 1.6rem;
+  }
+
+  &__status {
+    align-self: flex-start;
+    padding: 0.4rem 1.2rem;
+    border-radius: 9rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+
+    &--active {
+      background: var(--success-100);
+      color: var(--success-700);
+    }
+
+    &--completed,
+    &--finished {
+      background: var(--information-100);
+      color: var(--information-700);
+    }
+
+    &--cancelled {
+      background: var(--error-100);
+      color: var(--error-700);
+    }
+  }
+
+  &__title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--secondary-500);
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin: 0;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 10rem 1fr;
+    gap: 1.6rem;
+
+    dt {
+      color: var(--secondary-400);
+      font-size: 1.6rem;
+    }
+
+    dd {
+      font-weight: 600;
+      color: var(--secondary-500);
+      font-size: 1.6rem;
+    }
+
+    &--total dd {
+      font-size: 2.4rem;
+      color: var(--primary-500);
+    }
+  }
+
+  &__hint {
+    font-weight: 400;
+    color: var(--secondary-400);
+    font-size: 1.4rem;
+  }
+
+  &__actions {
+    margin-top: 0.8rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--secondary-100);
+  }
+
+  &__btn-end {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem 2.4rem;
+    border: none;
+    border-radius: 1.2rem;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--primary-0);
+    background: var(--primary-500);
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--primary-600);
+    }
+  }
+
+  &__geo-hint {
+    margin-top: 1rem;
+    font-size: 1.4rem;
+    color: var(--secondary-400);
+    line-height: 150%;
+  }
+
+  &__end-error {
+    margin-top: 1rem;
+    color: var(--error-600);
+    font-size: 1.4rem;
+  }
+}
+
+.home {
+  &__title {
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: var(--secondary-500);
+    margin-bottom: 0.8rem;
+  }
+
+  &__subtitle {
+    font-size: 1.6rem;
+    color: var(--secondary-400);
+    margin-bottom: 2.4rem;
+  }
+}
+
+.catalog-composite {
+  &__fleet {
+    margin-bottom: 3.2rem;
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--secondary-500);
+    }
+
+    p {
+      color: var(--secondary-400);
+      margin-top: 0.4rem;
+    }
+  }
+
+  &__section {
+    margin-bottom: 4.8rem;
+  }
+
+  &__title {
+    font-size: 2.4rem;
+    font-weight: 600;
+    color: var(--secondary-500);
+  }
+
+  &__meta {
+    color: var(--secondary-400);
+    margin: 0.4rem 0 2rem;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
+  }
+}
+
+.footer {
+  margin-top: auto;
+  border-top: 1px solid rgba(195, 212, 233, 0.4);
+  background: var(--primary-0);
+
+  &__inner {
+    padding: 2.4rem 6.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.6rem;
+  }
+
+  &__brand {
+    font-weight: 700;
+    color: var(--primary-500);
+  }
+
+  &__copy {
+    color: var(--secondary-400);
+    font-size: 1.4rem;
+  }
+
+  &__nav {
+    display: flex;
+    gap: 2rem;
+
+    a {
+      color: var(--secondary-500);
+      font-weight: 500;
+
+      &:hover {
+        color: var(--primary-500);
+      }
+    }
+  }
+}
+
+.settings {
+  max-width: 48rem;
+
+  h1 {
+    font-size: 2.8rem;
+    margin-bottom: 2rem;
+  }
+
+  &__card {
+    background: var(--primary-0);
+    border: 1px solid var(--secondary-100);
+    border-radius: 1.6rem;
+    padding: 2.4rem;
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: 1.2rem 2rem;
+    margin: 2rem 0;
+
+    dt {
+      color: var(--secondary-400);
+    }
+
+    dd {
+      font-weight: 600;
+      color: var(--secondary-500);
+    }
+  }
+
+  &__hint {
+    color: var(--secondary-400);
+    margin-bottom: 1rem;
+  }
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  main {
+    flex: 1;
+  }
+}
+
+@media (max-width: 1024px) {
+  .catalog-composite__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .catalog-composite__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-container {
+    padding: 2.4rem;
+  }
+
+  .rental-card {
+    grid-template-columns: 1fr;
+
+    &__placeholder {
+      width: 100%;
+    }
+  }
+
+  .map__overlay {
+    width: calc(100% - 2.4rem);
+  }
+}
+
+.login__redirect {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  font-size: 1.8rem;
+  gap: 2rem;
+
+}
+.car-card__message {
+  display: none;
+}
+.footer__copy {
+  display: none;
 }

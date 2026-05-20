@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
 import { getAllCars } from '../../api/cars.js';
+import { CarFilterIterator } from '../../patterns/iterator/CarFilterIterator.js';
+import CarCard from '../ui/CarCard.jsx';
 
 const DEFAULT_CENTER = [55.751574, 37.573856];
 
@@ -13,29 +15,28 @@ function getCarCoords(car) {
 
 const YandexMap = () => {
   const [cars, setCars] = useState([]);
+  const [selectedCar, setSelectedCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const apiKey = import.meta.env.VITE_YANDEX_MAPS_API_KEY;
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadCars = useCallback(() => {
+    setLoading(true);
+    setError('');
 
-    getAllCars()
+    return getAllCars()
       .then((data) => {
-        if (!cancelled) setCars(data);
+        const iterator = new CarFilterIterator(data, (car) => car.status === 'available');
+        setCars(iterator.toArray());
       })
-      .catch(() => {
-        if (!cancelled) setError('Не удалось загрузить автомобили');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+      .catch(() => setError('Не удалось загрузить автомобили'))
+      .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadCars();
+  }, [loadCars]);
 
   const placemarks = useMemo(
     () =>
@@ -43,18 +44,25 @@ const YandexMap = () => {
         .map((car) => {
           const coords = getCarCoords(car);
           if (!coords) return null;
-          const tag = car.tags?.[0]?.name ?? '';
-          return {
-            id: car.id,
-            coords,
-            balloon: `${car.brand} ${car.model}<br/>${car.plate_number}<br/>${car.price_per_minute} ₽/мин${tag ? `<br/>${tag}` : ''}`,
-          };
+          return { id: car.id, coords, car };
         })
         .filter(Boolean),
     [cars],
   );
 
   const mapCenter = placemarks[0]?.coords ?? DEFAULT_CENTER;
+
+  const handlePlacemarkClick = (car) => {
+    setSelectedCar(car);
+  };
+
+  const handleCloseOverlay = () => {
+    setSelectedCar(null);
+  };
+
+  const handleRented = () => {
+    loadCars().then(() => setSelectedCar(null));
+  };
 
   if (!apiKey) {
     return <div>Ошибка: отсутствует ключ API для Яндекс.Карт (VITE_YANDEX_MAPS_API_KEY)</div>;
@@ -76,15 +84,38 @@ const YandexMap = () => {
               <Placemark
                 key={mark.id}
                 geometry={mark.coords}
-                properties={{ balloonContent: mark.balloon }}
+                options={{ preset: 'islands#blueAutoIcon' }}
+                onClick={() => handlePlacemarkClick(mark.car)}
               />
             ))}
           </Map>
+
+          {selectedCar && (
+            <>
+              <button
+                type="button"
+                className="map__backdrop"
+                aria-label="Закрыть"
+                onClick={handleCloseOverlay}
+              />
+              <div className="map__overlay" role="dialog" aria-label="Карточка автомобиля">
+                <button
+                  type="button"
+                  className="map__overlay-close"
+                  aria-label="Закрыть"
+                  onClick={handleCloseOverlay}
+                >
+                  ×
+                </button>
+                <CarCard car={selectedCar} onRented={handleRented} className="car-card--map" />
+              </div>
+            </>
+          )}
         </div>
       </YMaps>
 
       {!loading && !error && (
-        <p className="map__legend">На карте: {placemarks.length} автомобилей</p>
+        <p className="map__legend">На карте: {placemarks.length} автомобилей · нажмите на метку</p>
       )}
     </div>
   );

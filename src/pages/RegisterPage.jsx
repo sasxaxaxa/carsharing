@@ -7,10 +7,10 @@ const RegisterPage = () => {
       <div className="login">
         <div className="login__wrapper">
           <RegisterForm />
-          <p>
+          <div className="login__redirect">
             Уже есть аккаунт?{' '}
             <Button href="/login" label="Войти" mode="transparent" location="login-banner" />
-          </p>
+          </div>
         </div>
       </div>
     </div>

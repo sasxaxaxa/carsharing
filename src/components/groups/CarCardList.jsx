@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getAllCars } from '../../api/cars.js';
-import CarCard from '../ui/CarCard.jsx';
+import { buildFleetFromCars } from '../../patterns/composite/buildFleetFromCars.js';
+import { CarFilterIterator } from '../../patterns/iterator/CarFilterIterator.js';
+import CatalogComposite from '../catalog/CatalogComposite.jsx';
 
 const CarCardList = () => {
-  const [cars, setCars] = useState([]);
+  const [fleet, setFleet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -12,7 +14,14 @@ const CarCardList = () => {
     setError('');
 
     getAllCars()
-      .then(setCars)
+      .then((cars) => {
+        const availableIterator = new CarFilterIterator(
+          cars,
+          (car) => car.status === 'available',
+        );
+        const availableCars = availableIterator.toArray();
+        setFleet(buildFleetFromCars(availableCars));
+      })
       .catch(() => setError('Не удалось загрузить каталог'))
       .finally(() => setLoading(false));
   };
@@ -20,6 +29,8 @@ const CarCardList = () => {
   useEffect(() => {
     loadCars();
   }, []);
+
+  const totalCount = useMemo(() => fleet?.getCount() ?? 0, [fleet]);
 
   if (loading) {
     return <p className="catalog__status">Загрузка...</p>;
@@ -36,23 +47,11 @@ const CarCardList = () => {
     );
   }
 
-  if (!cars.length) {
+  if (!fleet || totalCount === 0) {
     return <p className="catalog__status">Нет доступных автомобилей</p>;
   }
 
-  return (
-    <div className="catalog">
-      <div className="catalog__list">
-        <ul>
-          {cars.map((car) => (
-            <li key={car.id}>
-              <CarCard car={car} onRented={loadCars} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
+  return <CatalogComposite fleet={fleet} onRented={loadCars} />;
 };
 
 export default CarCardList;

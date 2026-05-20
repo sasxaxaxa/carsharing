@@ -8,16 +8,18 @@ import CatalogPage from './pages/CatalogPage.jsx';
 import MyRentsPage from './pages/MyRentsPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
+import SettingsPage from './pages/SettingsPage.jsx';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <main>
+        <main className="app">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/my-rents" element={<MyRentsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
           </Routes>
