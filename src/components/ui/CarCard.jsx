@@ -5,6 +5,12 @@ import { startRental } from '../../api/rentals.js';
 import { updateUserLocation } from '../../api/users.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getCarCoords } from '../../utils/geo.js';
+import { BaseRental } from '../../patterns/decorator/BaseRental.js';
+import {
+  SERVICE_OPTIONS,
+  buildDecoratedRental,
+} from '../../patterns/decorator/RentalDecorators.js';
+import { setRentalMeta } from '../../utils/rentalMeta.js';
 
 function formatTag(tag) {
   if (!tag?.name) return '';
@@ -17,6 +23,7 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
   const [renting, setRenting] = useState(false);
   const [message, setMessage] = useState('');
   const [imageSrc, setImageSrc] = useState(() => getMediaUrl(car?.main_image));
+  const [selectedServices, setSelectedServices] = useState([]);
 
   useEffect(() => {
     setImageSrc(getMediaUrl(car?.main_image));
@@ -64,10 +71,21 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
 
       const result = await startRental({
         car_id: car.id,
-        services: [],
+        services: selectedServices,
         user_latitude: lat,
         user_longitude: lon,
       });
+
+      if (result?.rental_id) {
+        setRentalMeta(result.rental_id, {
+          services: selectedServices,
+          services_text: result.services,
+          price_per_minute: result.price_per_minute,
+          total_with_services: result.total_with_services,
+          car_id: car.id,
+        });
+      }
+
       setMessage(result.message || 'Аренда начата');
       onRented?.(car);
       navigate('/my-rents');
@@ -89,6 +107,23 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
     }
     return null;
   })();
+
+  const decorated = (() => {
+    const base = new BaseRental({ pricePerMinute: car.price_per_minute });
+    return buildDecoratedRental(base, selectedServices);
+  })();
+
+  const totalPerMinute = decorated.getPricePerMinute();
+  const servicesLabel =
+    selectedServices.length > 0
+      ? decorated.getDescription().replace(/^Аренда\s*\+\s*/, '')
+      : 'Без доп. услуг';
+
+  const toggleService = (key) => {
+    setSelectedServices((prev) =>
+      prev.includes(key) ? prev.filter((x) => x !== key) : [...prev, key],
+    );
+  };
 
   return (
     <div className={`car-card ${className}`.trim()}>
@@ -115,9 +150,28 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
       <p className="car-card__number">{car.plate_number}</p>
 
       {showRentButton && (
+        <div className="car-card__services">
+          <p className="car-card__services-title">Доп. услуги</p>
+          <div className="car-card__services-grid">
+            {SERVICE_OPTIONS.map((opt) => (
+              <label key={opt.key} className="car-card__service">
+                <input
+                  type="checkbox"
+                  checked={selectedServices.includes(opt.key)}
+                  onChange={() => toggleService(opt.key)}
+                />
+                <span>{opt.label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="car-card__services-summary">{servicesLabel}</p>
+        </div>
+      )}
+
+      {showRentButton && (
         <div className="car-card__action-row">
           <span className="car-card__price">
-            {car.price_per_minute} ₽ /
+            {totalPerMinute.toFixed(2)} ₽ /
             <span className="period"> мин</span>
           </span>
           <button

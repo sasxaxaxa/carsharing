@@ -281,6 +281,46 @@
     align-items: center;
   }
 
+  &__services {
+    border: 1px solid var(--secondary-100);
+    background: var(--primary-0);
+    border-radius: 0.8rem;
+    padding: 1.2rem;
+  }
+
+  &__services-title {
+    margin: 0 0 0.8rem 0;
+    font-weight: 700;
+    color: var(--secondary-500);
+    font-size: 1.4rem;
+  }
+
+  &__services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem 1.2rem;
+  }
+
+  &__service {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.3rem;
+    color: var(--secondary-500);
+
+    input {
+      width: 1.6rem;
+      height: 1.6rem;
+    }
+  }
+
+  &__services-summary {
+    margin: 0.8rem 0 0 0;
+    font-size: 1.2rem;
+    color: var(--secondary-400);
+    line-height: 150%;
+  }
+
   &__price {
     font-weight: 700;
     font-size: 2rem;
@@ -764,4 +804,8 @@
 }
 .footer__copy {
   display: none;
+}
+
+.car-card__service {
+  font-size: 1.2rem;
 }
