@@ -1,0 +1,171 @@
+@startuml Morent Frontend - Final Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+' ========== PROXY (Заместитель) ==========
+package "patterns.proxy" {
+  interface IApiService {
+    +request(path, options)
+    +getCarsList(params)
+    +getAllCars(params)
+    +getCarDetail(carId)
+    +login(payload)
+    +register(payload)
+    +getProfile()
+    +getRentalHistory()
+    +startRental(payload)
+  }
+
+  class RealApiService {
+    -uses apiRequest from http.js
+    +request(path, options)
+    +getCarsList(params)
+    +getAllCars(params)
+    ...
+  }
+
+  class ApiServiceProxy {
+    -realService: RealApiService
+    -cache: Map
+    -loggingEnabled: boolean
+    +request(path, options)
+    +clearCache()
+  }
+
+  class apiClient <<singleton>> {
+    ApiServiceProxy instance
+  }
+
+  IApiService <|.. RealApiService
+  IApiService <|.. ApiServiceProxy
+  ApiServiceProxy o--> RealApiService : delegates
+  apiClient --> ApiServiceProxy
+}
+
+' ========== COMPOSITE (Компоновщик) ==========
+package "patterns.composite" {
+  abstract class CarComponent {
+    +getPrice()
+    +getCount()
+    +getName()
+  }
+
+  class CarLeaf {
+    -car: Car
+    +getCar()
+  }
+
+  class CarCategory {
+    -name: string
+    -children: CarComponent[]
+    +add(component)
+    +remove(component)
+    +getLeaves()
+  }
+
+  class CarFleet {
+    -name: string
+    -categories: CarCategory[]
+    +addCategory(category)
+    +getCategories()
+  }
+
+  class buildFleetFromCars <<function>> {
+    +buildFleetFromCars(cars): CarFleet
+  }
+
+  CarComponent <|-- CarLeaf
+  CarComponent <|-- CarCategory
+  CarComponent <|-- CarFleet
+  CarFleet o--> "0..*" CarCategory
+  CarCategory o--> "0..*" CarComponent
+  buildFleetFromCars ..> CarFleet : creates
+}
+
+' ========== ITERATOR (Итератор) ==========
+package "patterns.iterator" {
+  class CarIterator {
+    -cars: Car[]
+    -index: number
+    +next()
+    +first()
+    +last()
+    +reset()
+    +toArray()
+  }
+
+  class CarFilterIterator {
+    -filterFunc: Function
+  }
+
+  class CategoryIterator {
+    -stack: CarComponent[]
+    +next()
+  }
+
+  CarIterator <|-- CarFilterIterator
+  CategoryIterator ..> CarFleet : traverses
+  CategoryIterator ..> CarCategory : traverses
+  CategoryIterator ..> CarLeaf : yields
+}
+
+' ========== UI / Pages ==========
+package "components" {
+  class CatalogComposite {
+    +fleet: CarFleet
+    uses CategoryIterator
+  }
+
+  class CarCardList {
+    uses buildFleetFromCars
+    uses CarFilterIterator
+  }
+
+  class YandexMap {
+    uses CarFilterIterator
+    uses apiClient via getAllCars
+  }
+
+  class CarCard
+  class PageLayout
+  class Header
+  class Footer
+}
+
+package "pages" {
+  class HomePage
+  class CatalogPage
+  class MyRentsPage
+  class SettingsPage
+  class LoginPage
+}
+
+package "context" {
+  class AuthProvider
+  class useAuth
+}
+
+CarCardList --> CatalogComposite
+CarCardList --> buildFleetFromCars
+CarCardList --> CarFilterIterator
+CatalogComposite --> CategoryIterator
+CatalogComposite --> CarFleet
+
+package "api" {
+  class cars.js
+  class users.js
+  class rentals.js
+  class http.js
+}
+
+cars.js --> apiClient
+users.js --> apiClient
+rentals.js --> apiClient
+RealApiService --> http.js
+
+AuthProvider --> users.js
+HomePage --> YandexMap
+CatalogPage --> CarCardList
+
+@enduml
