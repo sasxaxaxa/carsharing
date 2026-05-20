@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { getAllCars } from '../../api/cars.js';
 import { buildFleetFromCars } from '../../patterns/composite/buildFleetFromCars.js';
 import { CarFilterIterator } from '../../patterns/iterator/CarFilterIterator.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import CatalogComposite from '../catalog/CatalogComposite.jsx';
 
 const CarCardList = () => {
+  const { user, isAuthenticated } = useAuth();
   const [fleet, setFleet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -13,7 +15,12 @@ const CarCardList = () => {
     setLoading(true);
     setError('');
 
-    getAllCars()
+    const params =
+      isAuthenticated && user?.license_category
+        ? { license_category: user.license_category }
+        : {};
+
+    getAllCars(params)
       .then((cars) => {
         const availableIterator = new CarFilterIterator(
           cars,
@@ -28,7 +35,7 @@ const CarCardList = () => {
 
   useEffect(() => {
     loadCars();
-  }, []);
+  }, [isAuthenticated, user?.license_category]);
 
   const totalCount = useMemo(() => fleet?.getCount() ?? 0, [fleet]);
 

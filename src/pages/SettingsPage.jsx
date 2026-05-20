@@ -39,6 +39,8 @@ const SettingsPage = () => {
               <dd>{user.phone || '—'}</dd>
               <dt>Имя</dt>
               <dd>{[user.first_name, user.last_name].filter(Boolean).join(' ') || '—'}</dd>
+              <dt>Категория прав</dt>
+              <dd>{user.license_category_display || user.license_category || '—'}</dd>
               <dt>Верификация</dt>
               <dd>{user.is_verified ? 'Подтверждён' : 'Ожидает проверки'}</dd>
             </dl>

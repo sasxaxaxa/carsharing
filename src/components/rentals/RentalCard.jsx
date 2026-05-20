@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import CarCard from '../ui/CarCard.jsx';
 import { endRental } from '../../api/rentals.js';
 import { ApiError } from '../../api/http.js';
+import { getUserCoordinates } from '../../utils/geo.js';
 
 const STATUS_LABELS = {
   active: 'Активна',
@@ -9,8 +10,6 @@ const STATUS_LABELS = {
   completed: 'Завершена',
   cancelled: 'Отменена',
 };
-
-const DEFAULT_COORDS = { lat: 55.751574, lon: 37.573856 };
 
 function formatDateTime(value) {
   if (!value) return '—';
@@ -26,35 +25,6 @@ function formatDateTime(value) {
 function formatPrice(value) {
   if (value === null || value === undefined || value === '') return '—';
   return `${parseFloat(value).toLocaleString('ru-RU')} ₽`;
-}
-
-function getFallbackCoords(car) {
-  const lat = parseFloat(car?.location?.latitude);
-  const lon = parseFloat(car?.location?.longitude);
-  if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
-    return { lat, lon };
-  }
-  return DEFAULT_COORDS;
-}
-
-function getEndCoordinates(car) {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      resolve(getFallbackCoords(car));
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        resolve({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-        });
-      },
-      () => resolve(getFallbackCoords(car)),
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 },
-    );
-  });
 }
 
 function isActiveRental(rental) {
@@ -95,7 +65,7 @@ const RentalCard = ({ rental, onEnded }) => {
     setEnding(true);
 
     try {
-      const { lat, lon } = await getEndCoordinates(car);
+      const { lat, lon } = await getUserCoordinates(car);
       const result = await endRental({
         rental_id: rental.id,
         end_latitude: lat,

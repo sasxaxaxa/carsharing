@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, CAR_IMAGE_FALLBACK, getMediaUrl } from '../../api/http.js';
 import { startRental } from '../../api/rentals.js';
+import { updateUserLocation } from '../../api/users.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { getCarCoords } from '../../utils/geo.js';
 
 function formatTag(tag) {
   if (!tag?.name) return '';
@@ -10,7 +12,7 @@ function formatTag(tag) {
 }
 
 const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [renting, setRenting] = useState(false);
   const [message, setMessage] = useState('');
@@ -24,6 +26,11 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
 
   const title = `${car.brand} ${car.model}`;
   const tagLabel = car.tags?.[0] ? formatTag(car.tags[0]) : '';
+  const licenseMismatch =
+    isAuthenticated && user?.license_category && car.required_license
+      ? user.license_category !== car.required_license
+      : false;
+  const notVerified = isAuthenticated && user && !user.is_verified;
 
   const handleImageError = () => {
     setImageSrc(CAR_IMAGE_FALLBACK);
@@ -35,13 +42,35 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
       return;
     }
 
+    if (!user?.is_verified) {
+      setMessage('Аккаунт не верифицирован. Дождитесь проверки документов.');
+      return;
+    }
+
+    if (licenseMismatch) {
+      setMessage(
+        `Нужна категория прав ${car.required_license_display || car.required_license}`,
+      );
+      return;
+    }
+
     setRenting(true);
     setMessage('');
 
     try {
-      const result = await startRental({ car_id: car.id, services: [] });
+      const { lat, lon } = getCarCoords(car);
+
+      await updateUserLocation({ latitude: lat, longitude: lon }).catch(() => {});
+
+      const result = await startRental({
+        car_id: car.id,
+        services: [],
+        user_latitude: lat,
+        user_longitude: lon,
+      });
       setMessage(result.message || 'Аренда начата');
       onRented?.(car);
+      navigate('/my-rents');
     } catch (err) {
       const text = err instanceof ApiError ? err.message : 'Не удалось начать аренду';
       setMessage(text);
@@ -49,6 +78,17 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
       setRenting(false);
     }
   };
+
+  const rentDisabled = renting || car.status !== 'available';
+
+  const rentHint = (() => {
+    if (!isAuthenticated) return null;
+    if (notVerified) return 'Аккаунт не верифицирован — аренда недоступна.';
+    if (licenseMismatch) {
+      return `Нужна категория прав ${car.required_license_display || car.required_license}.`;
+    }
+    return null;
+  })();
 
   return (
     <div className={`car-card ${className}`.trim()}>
@@ -60,6 +100,10 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
           {car.year}
         </time>
       </div>
+
+      {car.required_license_display && (
+        <p className="car-card__license">{car.required_license_display}</p>
+      )}
 
       <img
         className="car-card__image"
@@ -80,12 +124,14 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
             type="button"
             className="car-card__button"
             onClick={handleRent}
-            disabled={renting || car.status !== 'available'}
+            disabled={rentDisabled}
           >
             {renting ? 'Бронирование...' : 'Арендовать'}
           </button>
         </div>
       )}
+
+      {rentHint && <p className="car-card__hint">{rentHint}</p>}
 
       {!showRentButton && (
         <p className="car-card__price car-card__price--solo">
@@ -93,7 +139,7 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
         </p>
       )}
 
-      {message && <p className="car-card__message">{message}</p>}
+      {message && <p className="car-card__message car-card__message--visible">{message}</p>}
     </div>
   );
 };

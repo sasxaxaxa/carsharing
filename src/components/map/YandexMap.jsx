@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
 import { getAllCars } from '../../api/cars.js';
 import { CarFilterIterator } from '../../patterns/iterator/CarFilterIterator.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import CarCard from '../ui/CarCard.jsx';
 
 const DEFAULT_CENTER = [55.751574, 37.573856];
@@ -14,6 +15,7 @@ function getCarCoords(car) {
 }
 
 const YandexMap = () => {
+  const { user, isAuthenticated } = useAuth();
   const [cars, setCars] = useState([]);
   const [selectedCar, setSelectedCar] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,14 +27,19 @@ const YandexMap = () => {
     setLoading(true);
     setError('');
 
-    return getAllCars()
+    const params =
+      isAuthenticated && user?.license_category
+        ? { license_category: user.license_category }
+        : {};
+
+    return getAllCars(params)
       .then((data) => {
         const iterator = new CarFilterIterator(data, (car) => car.status === 'available');
         setCars(iterator.toArray());
       })
       .catch(() => setError('Не удалось загрузить автомобили'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isAuthenticated, user?.license_category]);
 
   useEffect(() => {
     loadCars();
