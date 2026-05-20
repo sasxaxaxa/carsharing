@@ -79,6 +79,10 @@ export class ApiServiceProxy {
     return this.realService.getProfile();
   }
 
+  updateUserLocation(payload) {
+    return this.realService.updateUserLocation(payload);
+  }
+
   getRentalHistory() {
     return this.realService.getRentalHistory();
   }

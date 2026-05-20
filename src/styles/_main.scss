@@ -258,6 +258,11 @@
     color: var(--secondary-300);
   }
 
+  &__license {
+    font-size: 1.2rem;
+    color: var(--secondary-300);
+  }
+
   &__number {
     font-weight: 600;
     font-size: 3.2rem;
@@ -401,7 +406,20 @@
 
 .car-card__message {
   margin-top: 0.8rem;
-  font-size: 0.9rem;
+  font-size: 1.4rem;
+  color: var(--secondary-500);
+  line-height: 150%;
+
+  &--visible {
+    display: block;
+  }
+}
+
+.car-card__hint {
+  margin-top: 0.8rem;
+  font-size: 1.3rem;
+  color: #c0392b;
+  line-height: 150%;
 }
 
 .rentals {
@@ -743,9 +761,6 @@
   font-size: 1.8rem;
   gap: 2rem;
 
-}
-.car-card__message {
-  display: none;
 }
 .footer__copy {
   display: none;

@@ -55,6 +55,10 @@ export class RealApiService {
     return this.request('/api/users/profile', { auth: true });
   }
 
+  updateUserLocation(payload) {
+    return this.request('/api/users/location', { method: 'POST', body: payload, auth: true });
+  }
+
   getRentalHistory() {
     return this.request('/api/rentals/history', { auth: true });
   }

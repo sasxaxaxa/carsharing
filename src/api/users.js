@@ -11,3 +11,7 @@ export function loginUser(payload) {
 export function getProfile() {
   return apiClient.getProfile();
 }
+
+export function updateUserLocation(payload) {
+  return apiClient.updateUserLocation(payload);
+}

@@ -13,6 +13,7 @@ const RegisterForm = () => {
     password: '',
     first_name: '',
     last_name: '',
+    license_category: 'B',
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -85,6 +86,19 @@ const RegisterForm = () => {
             onChange={handleChange}
             required
           />
+        </div>
+
+        <div>
+          <select
+            name="license_category"
+            value={form.license_category}
+            onChange={handleChange}
+            required
+          >
+            <option value="A">A — мотоциклы</option>
+            <option value="B">B — легковые авто</option>
+            <option value="C">C — грузовые</option>
+          </select>
         </div>
 
         <div>
