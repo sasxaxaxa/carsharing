@@ -9,6 +9,7 @@ import MyRentsPage from './pages/MyRentsPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import MapPage from './pages/MapPage.jsx';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <main className="app">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/map" element={<MapPage />} />
             <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/my-rents" element={<MyRentsPage />} />
             <Route path="/settings" element={<SettingsPage />} />

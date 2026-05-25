@@ -17,8 +17,5 @@ export function getCarCategories() {
 }
 
 export function getNearestCars(payload) {
-  return apiClient.request('/api/cars/nearest', {
-    method: 'POST',
-    body: payload,
-  });
+  return apiClient.getNearestCars(payload);
 }

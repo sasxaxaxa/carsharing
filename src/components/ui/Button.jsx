@@ -20,7 +20,7 @@ const Button = (props) => {
 
   const linkProps = isLink
     ? { href, role: 'button' }
-    : { type: 'button', ...rest };
+    : { type: rest.type ?? 'button', ...rest };
 
   const iconComponent = typeof iconName === 'string'
     ? (

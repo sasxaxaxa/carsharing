@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ApiError, CAR_IMAGE_FALLBACK, getMediaUrl } from '../../api/http.js';
+import { ApiError } from '../../api/http.js';
+import { getCarImageUrl, getCarPlaceholderUrl } from '../../utils/carImage.js';
 import { startRental } from '../../api/rentals.js';
 import { updateUserLocation } from '../../api/users.js';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { getCarCoords } from '../../utils/geo.js';
+import {
+  formatCarLocation,
+  formatDistance,
+  formatSteering,
+  getUserCoordinates,
+} from '../../utils/geo.js';
 import { BaseRental } from '../../patterns/decorator/BaseRental.js';
 import {
   SERVICE_OPTIONS,
@@ -22,17 +28,20 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
   const navigate = useNavigate();
   const [renting, setRenting] = useState(false);
   const [message, setMessage] = useState('');
-  const [imageSrc, setImageSrc] = useState(() => getMediaUrl(car?.main_image));
+  const [imageSrc, setImageSrc] = useState(() => getCarImageUrl(car));
   const [selectedServices, setSelectedServices] = useState([]);
 
   useEffect(() => {
-    setImageSrc(getMediaUrl(car?.main_image));
+    setImageSrc(getCarImageUrl(car));
   }, [car?.id, car?.main_image]);
 
   if (!car) return null;
 
   const title = `${car.brand} ${car.model}`;
-  const tagLabel = car.tags?.[0] ? formatTag(car.tags[0]) : '';
+  const tagLabels = (car.tags ?? []).map(formatTag).filter(Boolean);
+  const locationLabel = formatCarLocation(car.location);
+  const distanceLabel = car.distance != null ? formatDistance(car.distance) : '';
+  const steeringLabel = formatSteering(car.steering);
   const licenseMismatch =
     isAuthenticated && user?.license_category && car.required_license
       ? user.license_category !== car.required_license
@@ -40,7 +49,7 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
   const notVerified = isAuthenticated && user && !user.is_verified;
 
   const handleImageError = () => {
-    setImageSrc(CAR_IMAGE_FALLBACK);
+    setImageSrc(getCarPlaceholderUrl(car));
   };
 
   const handleRent = async () => {
@@ -65,7 +74,7 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
     setMessage('');
 
     try {
-      const { lat, lon } = getCarCoords(car);
+      const { lat, lon } = await getUserCoordinates(car, user);
 
       await updateUserLocation({ latitude: lat, longitude: lon }).catch(() => {});
 
@@ -130,11 +139,37 @@ const CarCard = ({ car, onRented, showRentButton = true, className = '' }) => {
       <h3 className="car-card__model">{title}</h3>
 
       <div className="car-card__info-row">
-        {tagLabel && <span className="car-card__tag">{tagLabel}</span>}
+        {tagLabels.length > 0 ? (
+          <div className="car-card__tags">
+            {tagLabels.map((label) => (
+              <span key={label} className="car-card__tag">
+                {label}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span />
+        )}
         <time className="car-card__year" dateTime={String(car.year)}>
           {car.year}
         </time>
       </div>
+
+      {(distanceLabel || locationLabel) && (
+        <p className="car-card__meta">
+          {distanceLabel && <span className="car-card__distance">≈ {distanceLabel}</span>}
+          {distanceLabel && locationLabel && ' · '}
+          {locationLabel}
+        </p>
+      )}
+
+      {(car.capacity || steeringLabel || car.gasoline) && (
+        <p className="car-card__specs">
+          {car.capacity && <span>{car.capacity} мест</span>}
+          {steeringLabel && <span>{steeringLabel}</span>}
+          {car.gasoline && <span>{car.gasoline}</span>}
+        </p>
+      )}
 
       {car.required_license_display && (
         <p className="car-card__license">{car.required_license_display}</p>

@@ -170,7 +170,7 @@ const RentalCard = ({ rental, onEnded }) => {
               {ending ? 'Завершение...' : 'Завершить аренду'}
             </button>
             <p className="rental-card__geo-hint">
-              Координаты конца: браузер попросит геолокацию; если отказ — точка парка машины с карточки.
+              Координаты конца: браузер попросит геолокацию
             </p>
             {endError && <p className="rental-card__end-error">{endError}</p>}
           </div>

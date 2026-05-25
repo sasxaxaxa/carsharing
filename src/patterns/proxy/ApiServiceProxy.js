@@ -1,9 +1,3 @@
-/**
- * Заместитель (Proxy): контролирует доступ к RealApiService.
- * — кэш для GET-запросов каталога;
- * — логирование вызовов (для отладки развёртывания);
- * — единая точка входа клиента при деплое.
- */
 export class ApiServiceProxy {
   constructor(realService) {
     this.realService = realService;
@@ -54,6 +48,11 @@ export class ApiServiceProxy {
     return this.realService.getCarDetail(carId);
   }
 
+  getNearestCars(payload) {
+    this.log('getNearestCars', payload);
+    return this.realService.getNearestCars(payload);
+  }
+
   getCarCategories() {
     const cacheKey = 'GET:/api/cars/categories';
     if (this.cache.has(cacheKey)) {
@@ -77,6 +76,10 @@ export class ApiServiceProxy {
 
   getProfile() {
     return this.realService.getProfile();
+  }
+
+  updateProfile(payload) {
+    return this.realService.updateProfile(payload);
   }
 
   updateUserLocation(payload) {

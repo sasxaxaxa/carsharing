@@ -12,6 +12,10 @@ export function getProfile() {
   return apiClient.getProfile();
 }
 
+export function updateProfile(payload) {
+  return apiClient.updateProfile(payload);
+}
+
 export function updateUserLocation(payload) {
   return apiClient.updateUserLocation(payload);
 }

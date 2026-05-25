@@ -62,19 +62,12 @@ export async function apiRequest(path, options = {}) {
   return data;
 }
 
-export const CAR_IMAGE_FALLBACK =
-  'https://placehold.co/640x480/e8eef5/475569?text=Auto';
-
-function isUnavailableImageUrl(path) {
-  return !path || path.includes('loremflickr.com');
-}
-
 /**
  * Бэкенд иногда отдаёт внешний URL как /media/https%3A/example.com/...
  * — декодируем и возвращаем прямую ссылку.
  */
 export function getMediaUrl(path) {
-  if (isUnavailableImageUrl(path)) return CAR_IMAGE_FALLBACK;
+  if (!path || typeof path !== 'string') return '';
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
 
   const normalized = path.startsWith('/') ? path : `/${path}`;

@@ -1,8 +1,5 @@
 import { apiRequest } from '../../api/http.js';
 
-/**
- * Реальный субъект — прямые HTTP-запросы к бэкенду.
- */
 export class RealApiService {
   request(path, options) {
     return apiRequest(path, options);
@@ -39,6 +36,10 @@ export class RealApiService {
     return this.request(`/api/cars/${carId}`);
   }
 
+  getNearestCars(payload) {
+    return this.request('/api/cars/nearest', { method: 'POST', body: payload });
+  }
+
   getCarCategories() {
     return this.request('/api/cars/categories');
   }
@@ -53,6 +54,10 @@ export class RealApiService {
 
   getProfile() {
     return this.request('/api/users/profile', { auth: true });
+  }
+
+  updateProfile(payload) {
+    return this.request('/api/users/profile', { method: 'PUT', body: payload, auth: true });
   }
 
   updateUserLocation(payload) {
